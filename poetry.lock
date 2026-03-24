@@ -2170,6 +2170,26 @@ files = [
 typing-extensions = ">=4.12.0"
 
 [[package]]
+name = "typos"
+version = "1.44.0"
+description = "Source Code Spelling Correction"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "typos-1.44.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:bf4241c469c14b7213a5ce2cf2a0692be21641be1a247dc126bec3f982195d6c"},
+    {file = "typos-1.44.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:28332344a2939f20707ad0265cc10da5b930015c75920725cdd6db9ab9bdb18b"},
+    {file = "typos-1.44.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:95b91c20c914a0f728d3d0ad21e0fee3fd0bd0b7514d66b1d42f6047ebbb8646"},
+    {file = "typos-1.44.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:fd7a3d55466896336230679bf87484074b5912f555a8c8cf6ea88c084bf5b28d"},
+    {file = "typos-1.44.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7d78c219d802b124a9b90d7327665e6de20e3aba5f4ff31fb76e25c338a9475d"},
+    {file = "typos-1.44.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:b3796090bdf1531cc3abd34a597d0ca5aef5c40841e49f9aeda58f1ab950e060"},
+    {file = "typos-1.44.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:c6aea9c04fb9759efe94bddf8af4156707bc82de3b9b58118530f2c9818352c9"},
+    {file = "typos-1.44.0-py3-none-win32.whl", hash = "sha256:4af31b78e38e9720be009b725334108a3c4684bfc820ca8309f7ce54d72c303d"},
+    {file = "typos-1.44.0-py3-none-win_amd64.whl", hash = "sha256:3624055a8f04d9c40faf20ff0fcce9dbf4f8e2987c39680358901cc8634228c0"},
+    {file = "typos-1.44.0.tar.gz", hash = "sha256:8e1046d02f2fcea6df907b34b90556e4acafd9b287ad70ab27d2c06489f5df43"},
+]
+
+[[package]]
 name = "tzdata"
 version = "2025.3"
 description = "Provider of IANA time zone data"
@@ -2486,4 +2506,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4.0"
-content-hash = "c6a2b17bcd7832fe3c51c0a3e1248f5f5ae1900da4d134a678f97f380dfd4489"
+content-hash = "3815314d969f860336f6e3fc4ac01a863d7b442cf42b7f2b5c204c2d007f108b"

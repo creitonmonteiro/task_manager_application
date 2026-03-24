@@ -29,7 +29,8 @@ dev = [
     "ruff (>=0.15.7,<0.16.0)",
     "pytest (>=9.0.2,<10.0.0)",
     "pytest-cov (>=7.1.0,<8.0.0)",
-    "taskipy (>=1.14.1,<2.0.0)"
+    "taskipy (>=1.14.1,<2.0.0)",
+    "typos (>=1.44.0,<2.0.0)"
 ]
 
 [tool.ruff]
@@ -48,7 +49,11 @@ quote-style = 'single'
 pythonpath = "."
 addopts = '-p no:warnings'
 
+[tool.typos.files]
+extend-exclude = ['*.md']
+
 [tool.taskipy.tasks]
+pre_lint = 'typos'
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
 format = 'ruff format'
