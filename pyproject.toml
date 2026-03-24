@@ -31,7 +31,6 @@ dev = [
     "pytest-cov (>=7.1.0,<8.0.0)",
     "taskipy (>=1.14.1,<2.0.0)",
     "typos (>=1.44.0,<2.0.0)",
-    "poethepoet (>=0.42.1,<0.43.0)"
 ]
 
 [tool.ruff]
@@ -55,6 +54,7 @@ extend-exclude = ['*.md']
 
 [tool.taskipy.tasks]
 clean = 'powershell -Command Remove-Item -Recurse -Force **/__pycache__'
+act = 'powershell -Command .venv\Scripts\Activate.ps1'
 pre_lint = 'typos'
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
