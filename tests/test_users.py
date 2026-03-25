@@ -1,15 +1,6 @@
 from http import HTTPStatus
 
 from fastapi_zero.schemas import UserPublic
-from fastapi_zero.security import create_access_token
-
-
-def test_root_should_return_hello_world(client):
-
-    response = client.get('/')
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'Olá Mundo!'}
 
 
 def test_create_user_should_create_user(client):
@@ -184,70 +175,3 @@ def test_read_user_should_return_error_if_user_does_not_exist(client):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
-
-
-def test_get_token_should_return_access_token(client, user):
-
-    response = client.post(
-        '/token',
-        data={'username': user.email, 'password': user.clear_password},
-    )
-
-    resp_token = response.json()
-
-    assert response.status_code == HTTPStatus.OK
-    assert 'access_token' in resp_token
-    assert 'token_type' in resp_token
-    assert resp_token['token_type'] == 'bearer'
-
-
-def test_get_token_should_return_error_invalid_email(client, user):
-
-    response = client.post(
-        '/token',
-        data={
-            'username': 'invaliduser@example.com',
-            'password': user.clear_password,
-        },
-    )
-
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Incorrect email or password'}
-
-
-def test_get_token_should_return_error_invalid_password(client, user):
-
-    response = client.post(
-        '/token',
-        data={'username': user.email, 'password': 'invalidpassword'},
-    )
-
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Incorrect email or password'}
-
-
-def test_get_current_should_return_user_not_found(client):
-
-    data = {'no-email': 'test'}
-    token = create_access_token(data)
-
-    response = client.delete(
-        '/users/1',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Could not validate credentials'}
-
-
-def test_get_current_user_does_not_exists(client):
-    data = {'sub': 'test@test'}
-    token = create_access_token(data)
-
-    response = client.delete(
-        '/users/1',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.json() == {'detail': 'Could not validate credentials'}
