@@ -18,8 +18,7 @@ settings = Settings()
 pwd_context = PasswordHash.recommended()
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl='auth/token', 
-    refreshUrl='auth/refresh'
+    tokenUrl='auth/token', refreshUrl='auth/refresh'
 )
 
 

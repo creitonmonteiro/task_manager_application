@@ -51,6 +51,9 @@ quote-style = 'single'
 [tool.typos.files]
 extend-exclude = ['*.md']
 
+[tool.typos.default]
+extend-ignore-identifiers-re = ['selectin']
+
 [tool.pytest.ini_options]
 pythonpath = '.'
 addopts = '-p no:warnings'
@@ -61,7 +64,7 @@ core = 'ctrace'
 concurrency = ['thread', 'greenlet']
 
 [tool.taskipy.tasks]
-clean = "powershell -Command 'Get-ChildItem -Path . -Directory -Filter __pycache__ -Recurse | Remove-Item -Recurse -Force'"
+clean = 'powershell -Command "Get-ChildItem -Path . -Directory -Filter __pycache__ -Recurse | Remove-Item -Recurse -Force"'
 pre_lint = 'typos'
 lint = 'ruff check'
 pre_format = 'ruff check --fix'

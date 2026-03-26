@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi_zero import database
-from fastapi_zero.models import User
+from fastapi_zero.models import Todo, User
 
 
 @pytest.mark.asyncio
@@ -30,6 +30,7 @@ async def test_create_user_should_create_user_in_db(session, mock_db_time):
             'password': 'securepassword',
             'created_at': time,
             'updated_at': time,
+            'todos': [],
         }
 
 
@@ -43,3 +44,46 @@ async def test_get_session_should_return_session():
     assert isinstance(db_session, AsyncSession)
 
     await session_generator.aclose()
+
+
+@pytest.mark.asyncio
+async def test_create_todo_should_create_todo_in_db(session, user):
+    todo = Todo(
+        title='Test Todo',
+        description='Test Desc',
+        state='draft',
+        user_id=user.id,
+    )
+
+    session.add(todo)
+    await session.commit()
+
+    todo = await session.scalar(select(Todo))
+
+    assert asdict(todo) == {
+        'description': 'Test Desc',
+        'id': 1,
+        'state': 'draft',
+        'title': 'Test Todo',
+        'user_id': 1,
+        'created_at': todo.created_at,
+        'updated_at': todo.updated_at,
+    }
+
+
+@pytest.mark.asyncio
+async def test_user_todo_should_have_relationship(session, user: User):
+    todo = Todo(
+        title='Test Todo',
+        description='Test Desc',
+        state='draft',
+        user_id=user.id,
+    )
+
+    session.add(todo)
+    await session.commit()
+    await session.refresh(user)
+
+    user = await session.scalar(select(User).where(User.id == user.id))
+
+    assert user.todos == [todo]
