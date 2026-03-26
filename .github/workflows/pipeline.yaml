@@ -10,3 +10,12 @@ jobs:
               uses: actions/setup-python@v6
               with:
                 python-version: '3.14'
+
+            - name: Poetry Install
+              run: pipx install poetry
+
+            - name: Dependencies Install
+              run: poetry install
+
+            - name: Run Tests
+              run: poetry run task test --verbose --cov=fastapi_zero --cov-report=xml
