@@ -4,7 +4,7 @@ import factory.fuzzy
 import pytest
 from sqlalchemy.exc import DataError
 
-from fastapi_zero.models import Todo, TodoState, User
+from task_manager.models import Todo, TodoState, User
 
 
 class TodoFactory(factory.Factory):

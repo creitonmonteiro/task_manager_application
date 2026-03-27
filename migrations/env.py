@@ -7,8 +7,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from fastapi_zero.models import table_registry
-from fastapi_zero.settings import Settings
+from task_manager.models import table_registry
+from task_manager.settings import Settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

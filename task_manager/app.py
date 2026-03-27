@@ -3,7 +3,7 @@ import sys
 
 from fastapi import FastAPI
 
-from fastapi_zero.routers import auth, todos, users
+from task_manager.routers import auth, todos, users
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

@@ -11,4 +11,4 @@ RUN poetry install --no-interaction --no-ansi --without dev
 RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
-CMD ["poetry", "run", "uvicorn", "--host", "0.0.0.0", "fastapi_zero.app:app"]
+CMD ["poetry", "run", "uvicorn", "--host", "0.0.0.0", "task_manager.app:app"]

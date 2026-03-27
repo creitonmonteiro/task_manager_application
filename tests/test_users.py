@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi_zero.schemas import UserPublic
+from task_manager.schemas import UserPublic
 
 
 def test_create_user_should_create_user(client):

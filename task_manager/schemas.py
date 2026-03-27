@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from fastapi_zero.models import TodoState
+from task_manager.models import TodoState
 
 
 class Message(BaseModel):

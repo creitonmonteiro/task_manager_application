@@ -8,8 +8,8 @@ from jwt import (
     decode,
 )
 
-from fastapi_zero import security
-from fastapi_zero.security import create_access_token, settings
+from task_manager import security
+from task_manager.security import create_access_token, settings
 
 
 def test_jwt_should_encode_and_decode_token():

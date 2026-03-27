@@ -1,7 +1,7 @@
 services:
-  fastzero_database:
+  task_manager_database:
     image: postgres:16
-    container_name: fastzero_database
+    container_name: task_manager_database
     volumes:
       - db_data:/var/lib/postgresql/data/
     restart: unless-stopped
@@ -10,32 +10,32 @@ services:
     env_file:
       - .env.db
     networks:
-      - fastapi_zero_network
+      - task_manager_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 10
   
-  fastzero_app:
-    image: fastapi_zero
-    container_name: fastapi_zero:latest
+  task_manager_app:
+    image: task_manager
+    container_name: task_manager
     entrypoint: ./entrypoint.sh
     build: .
     ports:
       - "8001:8000"
     restart: unless-stopped
     depends_on:
-      fastzero_database:
+      task_manager_database:
         condition: service_healthy
     env_file:
       - .env
       - .env.db
     networks:
-      - fastapi_zero_network
+      - task_manager_network
 volumes:
   db_data:
 
 networks:
-  fastapi_zero_network:
+  task_manager_network:
     driver: bridge

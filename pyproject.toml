@@ -1,5 +1,5 @@
 [project]
-name = 'fastapi-zero'
+name = 'task-manager'
 version = '0.1.0'
 description = ''
 authors = [
@@ -70,7 +70,7 @@ pre_lint = 'typos'
 lint = 'ruff check'
 pre_format = 'ruff check --fix'
 format = 'ruff format'
-run = 'uvicorn fastapi_zero.app:app --reload'
+run = 'uvicorn task_manager.app:app --reload'
 pre_test = 'task lint'
-test = 'pytest -s -x --cov=fastapi_zero -vv'
+test = 'pytest -s -x --cov=task_manager -vv'
 post_test = 'coverage html'

@@ -6,16 +6,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing_extensions import Annotated
 
-from fastapi_zero.database import get_session
-from fastapi_zero.models import User
-from fastapi_zero.schemas import (
+from task_manager.database import get_session
+from task_manager.models import User
+from task_manager.schemas import (
     FilterPage,
     Message,
     UserList,
     UserPublic,
     UserSchema,
 )
-from fastapi_zero.security import get_current_user, get_password_hash
+from task_manager.security import get_current_user, get_password_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
 SessionDep = Annotated[AsyncSession, Depends(get_session)]

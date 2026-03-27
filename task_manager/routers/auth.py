@@ -6,10 +6,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi_zero.database import get_session
-from fastapi_zero.models import User
-from fastapi_zero.schemas import Token
-from fastapi_zero.security import (
+from task_manager.database import get_session
+from task_manager.models import User
+from task_manager.schemas import Token
+from task_manager.security import (
     create_access_token,
     get_current_user,
     verify_password,
