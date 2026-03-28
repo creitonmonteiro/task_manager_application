@@ -51,10 +51,15 @@ preview = true
 quote-style = 'single'
 
 [tool.typos.files]
-extend-exclude = ['*.md']
+extend-exclude = ['*.md', 'infra/']
 
 [tool.typos.default]
 extend-ignore-identifiers-re = ['selectin']
+
+[tool.typos.default.extend-words]
+aks = "aks"
+AKS = "AKS"
+snet = "snet"
 
 [tool.pytest.ini_options]
 pythonpath = '.'

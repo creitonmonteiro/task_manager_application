@@ -78,7 +78,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build_and_push
     if: github.event_name != 'pull_request'
 
@@ -99,8 +99,35 @@ jobs:
           echo "$KUBE_CONFIG_DATA" | base64 -d > "$HOME/.kube/config"
           chmod 600 "$HOME/.kube/config"
 
+      - name: Validate cluster connectivity
+        run: |
+          kubectl config current-context
+          kubectl cluster-info
+          kubectl get ns
+
       - name: Apply app manifests
-        run: kubectl apply -f k8s-app.yaml
+        run: |
+          kubectl apply -f k8s-namespace.yaml
+          kubectl apply -f k8s-postgres.yaml
+          kubectl apply -f k8s-app.yaml
+
+      - name: Create Grafana secrets
+        env:
+          GRAFANA_ADMIN_USER: ${{ secrets.GRAFANA_ADMIN_USER }}
+        run: |
+          if ! kubectl -n task-manager get secret grafana-secrets &>/dev/null; then
+            GRAFANA_ADMIN_PASSWORD=$(openssl rand -base64 40 | tr -d '=+/\n' | head -c 32)
+            kubectl -n task-manager create secret generic grafana-secrets \
+              --from-literal=GRAFANA_ADMIN_USER="$GRAFANA_ADMIN_USER" \
+              --from-literal=GRAFANA_ADMIN_PASSWORD="$GRAFANA_ADMIN_PASSWORD"
+            echo "::notice::grafana-secrets criado com senha gerada automaticamente (32 chars)."
+          else
+            echo "grafana-secrets já existe, mantendo senha atual."
+          fi
+
+      - name: Apply monitoring manifests
+        run: |
+          kubectl apply -f monitoring/
 
       - name: Deploy new image
         run: |
