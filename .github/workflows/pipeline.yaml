@@ -164,7 +164,34 @@ jobs:
             --from-file=users-create-get.js=loadtests/k6/users-create-get.js
           kubectl apply -f monitoring/k6-users-job.yaml
           kubectl -n task-manager wait --for=jsonpath='{.status.phase}'=Bound pvc/k6-results-pvc --timeout=180s
-          kubectl -n task-manager wait --for=condition=Complete job/k6-users-load --timeout=900s
+          for i in {1..90}; do
+            complete=$(kubectl -n task-manager get job k6-users-load -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}')
+            failed=$(kubectl -n task-manager get job k6-users-load -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}')
+
+            if [ "$complete" = "True" ]; then
+              echo "k6 job completed successfully"
+              break
+            fi
+
+            if [ "$failed" = "True" ]; then
+              echo "k6 job failed"
+              kubectl -n task-manager describe job k6-users-load
+              kubectl -n task-manager get pods -l job-name=k6-users-load -o wide
+              kubectl -n task-manager logs -l job-name=k6-users-load --tail=200 || true
+              exit 1
+            fi
+
+            sleep 10
+          done
+
+          complete=$(kubectl -n task-manager get job k6-users-load -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}')
+          if [ "$complete" != "True" ]; then
+            echo "k6 job did not complete within expected time"
+            kubectl -n task-manager describe job k6-users-load
+            kubectl -n task-manager get pods -l job-name=k6-users-load -o wide
+            kubectl -n task-manager logs -l job-name=k6-users-load --tail=200 || true
+            exit 1
+          fi
 
       - name: Collect k6 results from PVC via helper pod
         run: |
