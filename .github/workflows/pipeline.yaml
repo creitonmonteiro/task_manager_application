@@ -155,3 +155,46 @@ jobs:
           kubectl -n "${{ env.K8S_NAMESPACE }}" set image deployment/"${{ env.K8S_DEPLOYMENT }}" \
             "${{ env.K8S_CONTAINER }}"="${{ env.IMAGE_NAME }}:${{ needs.build_and_push.outputs.image_tag }}"
           kubectl -n "${{ env.K8S_NAMESPACE }}" rollout status deployment/"${{ env.K8S_DEPLOYMENT }}" --timeout=600s
+
+      - name: Prepare and run k6 load test inside cluster
+        run: |
+          kubectl -n task-manager delete job k6-users-load --ignore-not-found=true
+          kubectl -n task-manager delete configmap k6-users-script --ignore-not-found=true
+          kubectl -n task-manager create configmap k6-users-script \
+            --from-file=users-create-get.js=loadtests/k6/users-create-get.js
+          kubectl apply -f monitoring/k6-users-job.yaml
+          kubectl -n task-manager wait --for=condition=Complete job/k6-users-load --timeout=900s
+
+      - name: Collect k6 results from job pod
+        run: |
+          POD_NAME=$(kubectl -n task-manager get pod -l job-name=k6-users-load -o jsonpath='{.items[0].metadata.name}')
+          mkdir -p k6-results
+          kubectl -n task-manager cp "$POD_NAME:/results/summary.json" "k6-results/summary.json"
+          kubectl -n task-manager logs "$POD_NAME" > k6-results/k6.log
+
+      - name: Convert k6 summary JSON to HTML (k6-reporter)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.cjs -o k6-results/k6-reporter.cjs
+          node <<'NODE'
+          const fs = require('fs')
+          const path = require('path')
+
+          const reporter = require(path.resolve('k6-results/k6-reporter.cjs'))
+          const data = JSON.parse(fs.readFileSync('k6-results/summary.json', 'utf8'))
+          const html = reporter.htmlReport(data, {
+            title: 'K6 Users Create/Get - Pipeline Report',
+            theme: 'default',
+          })
+
+          fs.writeFileSync('k6-results/summary.html', html)
+          NODE
+
+      - name: Upload k6 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-users-report-${{ github.run_id }}
+          path: |
+            k6-results/summary.json
+            k6-results/summary.html
+            k6-results/k6.log
+          if-no-files-found: error

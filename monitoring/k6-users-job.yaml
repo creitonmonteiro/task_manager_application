@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-users-load
+  namespace: task-manager
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: k6-users-load
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:0.52.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BASE_URL
+              value: http://task-manager-app-service.task-manager.svc.cluster.local:8000
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - >
+              k6 run
+              -o experimental-prometheus-rw=http://prometheus-service.task-manager.svc.cluster.local:9090/api/v1/write
+              --summary-export=/results/summary.json
+              /scripts/users-create-get.js
+          volumeMounts:
+            - name: k6-script
+              mountPath: /scripts
+            - name: k6-results
+              mountPath: /results
+      volumes:
+        - name: k6-script
+          configMap:
+            name: k6-users-script
+        - name: k6-results
+          emptyDir: {}
