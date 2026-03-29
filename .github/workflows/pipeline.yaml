@@ -169,6 +169,7 @@ jobs:
       - name: Collect k6 results from PVC via helper pod
         run: |
           mkdir -p k6-results
+          kubectl -n task-manager delete pod k6-results-helper --ignore-not-found=true
           # Create a helper pod that mounts the PVC and outputs the files
           cat > /tmp/k6-helper-pod.yaml <<'EOF'
           apiVersion: v1
@@ -198,18 +199,27 @@ jobs:
           EOF
           
           kubectl apply -f /tmp/k6-helper-pod.yaml
-          kubectl -n task-manager wait --for=condition=Ready pod/k6-results-helper --timeout=30s || true
+          kubectl -n task-manager wait --for=jsonpath='{.status.phase}'=Succeeded pod/k6-results-helper --timeout=120s
           
           # Get the output
           HELPER_OUTPUT=$(kubectl -n task-manager logs k6-results-helper 2>/dev/null)
           SUMMARY_JSON=$(echo "$HELPER_OUTPUT" | sed '/^---K6-LOG---$/q' | sed '$ d')
           K6_LOG=$(echo "$HELPER_OUTPUT" | sed -n '/^---K6-LOG---$/,$p' | tail -n +2)
+
+          test -n "$SUMMARY_JSON"
+          test -n "$K6_LOG"
           
           echo "$SUMMARY_JSON" > k6-results/summary.json
           echo "$K6_LOG" > k6-results/k6.log
           
           # Cleanup
           kubectl -n task-manager delete pod k6-results-helper --ignore-not-found=true
+
+      - name: Convert k6 summary JSON to HTML
+        run: |
+          test -s k6-results/summary.json
+          curl -fsSL https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js -o k6-results/k6-reporter.cjs
+          test -s k6-results/k6-reporter.cjs
           node <<'NODE'
           const fs = require('fs')
           const path = require('path')
