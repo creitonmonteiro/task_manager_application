@@ -2,11 +2,47 @@
 
 ## CI/CD (GitHub Actions)
 
-O projeto possui pipeline completo em `.github/workflows/pipeline.yaml` com 3 estagios:
+O projeto possui um pipeline principal em `.github/workflows/pipeline.yaml` que orquestra workflows reutilizaveis em `.github/workflows/`.
 
-- Test: instala dependencias via Poetry e executa testes com cobertura.
-- Build/Push: gera imagem Docker, publica com tags `sha-<commit>` e `latest` no Docker Hub.
-- Deploy: aplica `k8s-app.yaml`, atualiza a imagem no Deployment e aguarda rollout.
+Fluxo atual da pipeline:
+
+- `unit_test`: instala dependencias via Poetry e executa os testes com cobertura.
+- `main_build`: gera a imagem Docker e publica as tags `sha-<commit>` e `latest` no Docker Hub.
+- `main_deploy`: cria/atualiza secrets, aplica manifests da aplicacao e do stack de monitoramento, atualiza a imagem do Deployment e aguarda o rollout.
+- `k6_load_test`: executa o teste de carga dentro do cluster, coleta os artefatos do PVC e gera um relatorio HTML a partir do `summary.json`.
+
+Arquivos de workflow:
+
+- `.github/workflows/pipeline.yaml`: orquestrador principal.
+- `.github/workflows/_unit_test.yml`: workflow reutilizavel de testes.
+- `.github/workflows/_build.yml`: workflow reutilizavel de build e push da imagem.
+- `.github/workflows/_deploy.yml`: workflow reutilizavel de deploy no Kubernetes.
+- `.github/workflows/_k6.yml`: workflow reutilizavel de teste de carga e coleta de artefatos.
+
+Comportamento por evento:
+
+- `pull_request` para `main`: executa apenas `unit_test`, mas somente quando o PR altera arquivos que impactam a aplicacao, testes, manifests, monitoramento ou carga.
+- `push` para `main`: executa `unit_test`, `main_build`, `main_deploy` e `k6_load_test`, mas somente quando o push altera arquivos que impactam a aplicacao, testes, manifests, monitoramento ou carga.
+- `workflow_dispatch`: permite disparo manual da pipeline completa, inclusive para validar mudancas que nao entram no criterio automatico.
+
+Criterio atual de execucao automatica:
+
+- Codigo e testes: `task_manager/**`, `tests/**`, `migrations/**`.
+- Carga e observabilidade: `loadtests/**`, `monitoring/**`.
+- Empacotamento e execucao: `Dockerfile`, `entrypoint.sh`, `compose.yml`.
+- Dependencias e configuracao da app: `pyproject.toml`, `poetry.lock`, `alembic.ini`.
+- Manifests Kubernetes da aplicacao: `k8s-*.yaml`.
+
+Exemplos de mudancas que nao disparam a pipeline automaticamente:
+
+- documentacao em `README.md`;
+- arquivos de apoio do repositorio em `.github/**`;
+- infraestrutura Terraform em `infra/**`.
+
+Relatorio de carga:
+
+- O job `k6_load_test` publica os artefatos `k6-results/summary.json`, `k6-results/summary.html` e `k6-results/k6.log`.
+- O HTML e gerado pelo script `loadtests/k6/generate-report.js`.
 
 ### Secrets necessarios no GitHub
 
@@ -21,6 +57,12 @@ O projeto possui pipeline completo em `.github/workflows/pipeline.yaml` com 3 es
 - `DOCKERHUB_TOKEN`
 - `KUBE_CONFIG_DATA` (kubeconfig em base64)
 - `GRAFANA_ADMIN_USER` (usuario admin do Grafana)
+
+Observacoes:
+
+- `DATABASE_URL` e usado nos testes.
+- No deploy, a pipeline tambem monta internamente a connection string do Postgres do cluster para popular o secret `task-manager-secrets`.
+- A senha do Grafana nao fica no GitHub: ela e gerada no primeiro deploy e persistida no secret `grafana-secrets` dentro do cluster.
 
 ## Terraform (Azure AKS)
 
@@ -111,6 +153,20 @@ kubectl -n task-manager port-forward svc/prometheus-service 39090:9090
 ```
 
 Depois abra `http://localhost:39090`.
+
+## Load Test (k6)
+
+Os manifests de carga ficam em `monitoring/k6-users-job.yaml` e `monitoring/k6-users-pvc.yaml`, enquanto o script de teste fica em `loadtests/k6/users-create-get.js`.
+
+Durante a pipeline:
+
+- o script do k6 e enviado ao cluster via ConfigMap;
+- o Job `k6-users-load` grava `summary.json` e `k6.log` em um PVC;
+- um pod helper temporario copia os resultados para o runner do GitHub Actions;
+- o script `loadtests/k6/generate-report.js` converte o resumo JSON em HTML;
+- os tres arquivos finais sao publicados como artifact do workflow.
+
+Se precisar inspecionar os resultados manualmente no cluster, valide primeiro se o Job terminou e depois leia os arquivos montados no PVC a partir de um pod temporario.
 
 ## NetworkPolicy
 
