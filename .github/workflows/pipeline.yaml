@@ -289,12 +289,12 @@ jobs:
           const data = JSON.parse(fs.readFileSync('k6-results/summary.json', 'utf8'))
 
           const metrics = data.metrics || {}
-          const checks = data.checks || {}
+            const checks = data.root_group?.checks || {}
 
           // Extract key metrics
-          const httpReqs = metrics.http_reqs?.values || {}
-          const httpLatency = metrics.http_req_duration?.values || {}
-          const httpErrors = metrics.http_req_failed?.values || {}
+            const httpReqs = metrics.http_reqs || {}
+            const httpLatency = metrics.http_req_duration || {}
+            const httpErrors = metrics.http_req_failed || {}
 
             function escapeHtml(value) {
               return String(value)
@@ -383,7 +383,7 @@ jobs:
                 </div>
                 <div class="metric-card">
                   <div class="metric-label">Failed Requests</div>
-                  <div class="metric-value">${(httpErrors.count || 0).toLocaleString()}</div>
+                  <div class="metric-value">${(httpErrors.fails || 0).toLocaleString()}</div>
                 </div>
               </div>
 
