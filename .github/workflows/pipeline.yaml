@@ -33,7 +33,7 @@ jobs:
       image_tag: ${{ needs.main_build.outputs.image_tag }}
     secrets: inherit
 
-  k6:
+  k6_load_test:
     needs: main_deploy
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/_k6.yml
