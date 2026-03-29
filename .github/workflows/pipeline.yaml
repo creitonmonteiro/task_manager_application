@@ -15,26 +15,26 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    uses: ./.github/workflows/_test.yml
+  unit_test:
+    uses: ./.github/workflows/_unit_test.yml
     secrets: inherit
 
-  build:
-    needs: test
+  main_build:
+    needs: unit_test
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/_build.yml
     secrets: inherit
 
-  deploy:
-    needs: build
+  main_deploy:
+    needs: main_build
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/_deploy.yml
     with:
-      image_tag: ${{ needs.build.outputs.image_tag }}
+      image_tag: ${{ needs.main_build.outputs.image_tag }}
     secrets: inherit
 
   k6:
-    needs: deploy
+    needs: main_deploy
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/_k6.yml
     secrets: inherit
