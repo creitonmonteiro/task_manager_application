@@ -160,10 +160,10 @@ jobs:
         run: |
           kubectl -n task-manager delete job k6-users-load --ignore-not-found=true
           kubectl -n task-manager delete configmap k6-users-script --ignore-not-found=true
-          kubectl -n task-manager delete pvc k6-results-pvc --ignore-not-found=true
           kubectl -n task-manager create configmap k6-users-script \
             --from-file=users-create-get.js=loadtests/k6/users-create-get.js
           kubectl apply -f monitoring/k6-users-job.yaml
+          kubectl -n task-manager wait --for=jsonpath='{.status.phase}'=Bound pvc/k6-results-pvc --timeout=180s
           kubectl -n task-manager wait --for=condition=Complete job/k6-users-load --timeout=900s
 
       - name: Collect k6 results from PVC via helper pod
