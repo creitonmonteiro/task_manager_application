@@ -24,6 +24,9 @@ spec:
         app: k6-users-load
     spec:
       restartPolicy: Never
+      securityContext:
+        runAsNonRoot: false
+        fsGroup: 0
       containers:
         - name: k6
           image: grafana/k6:0.52.0
@@ -36,10 +39,15 @@ spec:
             - -c
           args:
             - >
+              mkdir -p /results &&
+              chmod 777 /results &&
               k6 run
               -o experimental-prometheus-rw=http://prometheus-service.task-manager.svc.cluster.local:9090/api/v1/write
               --summary-export=/results/summary.json
               /scripts/users-create-get.js 2>&1 | tee /results/k6.log
+          securityContext:
+            allowPrivilegeEscalation: true
+            runAsUser: 0
           volumeMounts:
             - name: k6-script
               mountPath: /scripts
