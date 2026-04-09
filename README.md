@@ -1,5 +1,22 @@
 # Task Manager
 
+## Docker local
+
+Para subir a aplicacao com Postgres local via Docker Compose:
+
+```bash
+cp .env.example .env
+cp .env.db.example .env.db
+docker compose up --build
+```
+
+Comportamento do container da aplicacao:
+
+- monta `DATABASE_URL` a partir de `POSTGRES_*` quando ela nao for informada diretamente;
+- espera o Postgres aceitar conexoes;
+- executa `alembic upgrade head`;
+- sobe a API em `http://localhost:8001`.
+
 ## CI/CD (GitHub Actions)
 
 O projeto possui um pipeline principal em `.github/workflows/pipeline.yaml` que orquestra workflows reutilizaveis em `.github/workflows/`.

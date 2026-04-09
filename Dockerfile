@@ -4,7 +4,15 @@ ENV PIP_DEFAULT_TIMEOUT=120
 ENV POETRY_REQUESTS_TIMEOUT=120
 
 WORKDIR /app
-COPY . .
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends postgresql-client \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml poetry.lock README.md alembic.ini ./
+COPY migrations ./migrations
+COPY task_manager ./task_manager
+COPY entrypoint.sh ./entrypoint.sh
 
 RUN pip install poetry
 
